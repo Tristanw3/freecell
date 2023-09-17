@@ -1,6 +1,6 @@
 function createAllCardsList() {
     let allCards = [];
-    let cardSuit = ['A', 'B', 'C', 'D'];
+    let cardSuit = ['s', 'h', 'c', 'd'];
     let cardVal = [1,2,3,4,5,6,7,8,9,10,11,12,13];
     cardSuit.forEach(function(suit) {
         cardVal.forEach(function(value) {
@@ -14,13 +14,14 @@ function createAllCardsList() {
 let dragSrcEl = null;
 function handleDragStart(e) {
     dragSrcEl = e.target
-    makeDroppable(e.target.dataset.suit, e.target.dataset.number)
+    makeDroppable(dragSrcEl)
 }
 
 function handleDrop(e) {
     e.stopPropagation()
+    console.log()
     if(e.target.parentElement.className.includes('cardRow')) {
-        // dragSrcEl.style.top = String(Number(e.target.previousSibling.top.split('p')[0]) - 150) + 'px'
+        dragSrcEl.style.top = '-' + String(e.target.parentElement.childElementCount * 150) + 'px'
     } else {
         dragSrcEl.style.top = '';
     }
@@ -29,11 +30,9 @@ function handleDrop(e) {
     } else {
         e.target.append(dragSrcEl);
     }
-    
-
 }
 
-function makeDroppable(suit, dataNumber) {
+function makeDroppable(card) {
     // left four
     let leftFourCards = document.querySelectorAll('.leftFour .cardStack');
     leftFourCards.forEach(function(ele) {
@@ -49,8 +48,8 @@ function makeDroppable(suit, dataNumber) {
     // right four
     let rightFourCards = document.querySelectorAll('.rightFour .cardStack');
     rightFourCards.forEach(function(ele) {
-        if(Number(ele.dataset.number) + 1 === Number(dataNumber)) {
-            if(ele.dataset.suit === suit) {
+        if(Number(ele.dataset.number) + 1 === Number(card.dataset.number)) {
+            if(ele.dataset.suit === card.dataset.suit) {
                 ele.addEventListener("dragover", stopDragOver);
                 ele.addEventListener('drop', handleDrop);
             } else {
@@ -62,8 +61,18 @@ function makeDroppable(suit, dataNumber) {
     // bottom row
     let mm = document.querySelectorAll('.cardRow');
     mm.forEach(function(value) {
-        value.addEventListener("dragover", stopDragOver);
-        value.addEventListener('drop', handleDrop);
+        if(Number(card.dataset.number) + 1 === Number(value.lastChild.dataset.number)) {
+            if(card.dataset.colour !== value.lastChild.dataset.colour) {
+                value.addEventListener("dragover", stopDragOver);
+                value.addEventListener('drop', handleDrop);
+            } else {
+                value.removeEventListener("dragover", stopDragOver);
+                value.removeEventListener('drop', handleDrop);
+            }
+        } else {
+            value.removeEventListener("dragover", stopDragOver);
+            value.removeEventListener('drop', handleDrop);
+        }
     });
 }
 
@@ -74,6 +83,7 @@ function createCard(cardValue, isDraggable) {
     card.innerText = cardValue['suit'] + '-' + cardValue['number'];
     card.className = 'card';
     card.dataset.suit = cardValue['suit'];
+    card.dataset.colour = 'hd'.includes(cardValue['suit']) ? 'r' : 'b'
     card.dataset.number = cardValue['number'];
     if(isDraggable) {
         card.setAttribute('draggable', 'true');
