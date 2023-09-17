@@ -19,8 +19,17 @@ function handleDragStart(e) {
 
 function handleDrop(e) {
     e.stopPropagation()
-    dragSrcEl.style.top = '';
-    e.target.append(dragSrcEl);
+    if(e.target.parentElement.className.includes('cardRow')) {
+        // dragSrcEl.style.top = String(Number(e.target.previousSibling.top.split('p')[0]) - 150) + 'px'
+    } else {
+        dragSrcEl.style.top = '';
+    }
+    if (e.target.className === 'card') {
+        e.target.parentElement.append(dragSrcEl);
+    } else {
+        e.target.append(dragSrcEl);
+    }
+    
 
 }
 
@@ -28,7 +37,7 @@ function makeDroppable(suit, dataNumber) {
     // left four
     let leftFourCards = document.querySelectorAll('.leftFour .cardStack');
     leftFourCards.forEach(function(ele) {
-        console.log(ele.innerText)
+        // console.log(ele.innerText)
         if(ele.innerText === '') {
             ele.addEventListener("dragover", stopDragOver);    
             ele.addEventListener('drop', handleDrop);
@@ -49,16 +58,14 @@ function makeDroppable(suit, dataNumber) {
                 ele.removeEventListener('drop', handleDrop);
             }
         }
-    });   
-}
-
-function removeDrop() {
-    let stacks = document.querySelectorAll('.cardStack');
-    stacks.forEach(function( ) {
-
+    });
+    // bottom row
+    let mm = document.querySelectorAll('.cardRow');
+    mm.forEach(function(value) {
+        value.addEventListener("dragover", stopDragOver);
+        value.addEventListener('drop', handleDrop);
     });
 }
-
 
 function stopDragOver(e) {e.preventDefault();}
 

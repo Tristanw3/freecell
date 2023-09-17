@@ -46,7 +46,6 @@ html {
 }
 
 .cardRow {
-    
     width: 110px;
     /* border: 2px solid black; */
 
@@ -59,4 +58,8 @@ html {
     border-radius: 7px;
     border: 2px solid black; 
     position: relative;
+}
+
+.rightFour .cardStack .card {
+    position: absolute;
 }
