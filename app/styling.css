@@ -1,5 +1,5 @@
 html {
-    height: 100%;
+    height: 80vh;
     width: 100%;
     background-color: green;
 }
@@ -41,12 +41,11 @@ html {
     width: 100%;
     justify-content: space-around;
     padding-top: 10px;
-
-    
 }
 
 .cardRow {
     width: 110px;
+    height:200px;
     /* border: 2px solid black; */
 
 }
@@ -57,7 +56,7 @@ html {
     background-color: white;
     border-radius: 7px;
     border: 2px solid black; 
-    position: relative;
+    position: absolute;
 }
 
 .rightFour .cardStack .card {

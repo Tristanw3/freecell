@@ -21,7 +21,8 @@ function handleDrop(e) {
     e.stopPropagation()
     console.log()
     if(e.target.parentElement.className.includes('cardRow')) {
-        dragSrcEl.style.top = '-' + String(e.target.parentElement.childElementCount * 150) + 'px'
+        // dragSrcEl.style.top = String(e.target.parentElement.childElementCount * 150) + 'px'
+        dragSrcEl.style.top = String(220 + e.target.parentElement.childElementCount * 20) + "px";
     } else {
         dragSrcEl.style.top = '';
     }
@@ -30,6 +31,7 @@ function handleDrop(e) {
     } else {
         e.target.append(dragSrcEl);
     }
+    setDraggableCards();
 }
 
 function makeDroppable(card) {
@@ -78,17 +80,15 @@ function makeDroppable(card) {
 
 function stopDragOver(e) {e.preventDefault();}
 
-function createCard(cardValue, isDraggable) {
+function createCard(cardValue) {
     let card = document.createElement('div');
     card.innerText = cardValue['suit'] + '-' + cardValue['number'];
     card.className = 'card';
     card.dataset.suit = cardValue['suit'];
     card.dataset.colour = 'hd'.includes(cardValue['suit']) ? 'r' : 'b'
-    card.dataset.number = cardValue['number'];
-    if(isDraggable) {
-        card.setAttribute('draggable', 'true');
-        card.addEventListener("dragstart", handleDragStart);
-    }
+    card.dataset.number = cardValue['number'];    
+    // card.setAttribute('draggable', 'true');
+    // card.addEventListener("dragstart", handleDragStart);
     return card
 }
 
@@ -96,21 +96,29 @@ function opening(cardList) {
     let cardRows = document.getElementsByClassName('cardRow');
     
     cardList.forEach(function(value, index) {
+        
         let colNum = Math.floor(index / 7)
-        let x = createCard(value, true);
+        let x = createCard(value);
         let cardPos = index % 7;
-        x.style.top = "-" + String(cardPos * 150) + "px";
+        x.style.top = String(220 + cardPos * 20) + "px";
         cardRows[colNum].append(x);
     })
-    
-    let mm = document.querySelectorAll('.cardRow');
-    mm.forEach(function(value) {
-        // console.log(value.lastChild);
-    })
+    setDraggableCards();
 }
 
-function checkDraggable() {
+function setDraggableCards() {
+    let mm = document.querySelectorAll('.cardRow');
+    mm.forEach(function(nn) {
+        nn.childNodes.forEach(function(v) {
+            v.setAttribute('draggable', 'false');
+            v.removeEventListener("dragstart", handleDragStart);
+        });
+    })
+    mm.forEach(function(value) {
 
+        value.lastChild.setAttribute('draggable', 'true');
+        value.lastChild.addEventListener("dragstart", handleDragStart);
+    })
 }
 
 let initialCards = createAllCardsList();
