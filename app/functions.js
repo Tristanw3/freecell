@@ -7,8 +7,9 @@ function createAllCardsList() {
             allCards.push({'suit': suit, 'number': String(value)})
         });
     });
+    let shuffledCards = shuffle(allCards);
 
-    return allCards;
+    return shuffledCards;
 }
 
 let dragSrcEl = null;
@@ -18,8 +19,7 @@ function handleDragStart(e) {
 }
 
 function handleDrop(e) {
-    e.stopPropagation()
-    console.log()
+    e.stopPropagation();
     if(e.target.parentElement.className.includes('cardRow')) {
         // dragSrcEl.style.top = String(e.target.parentElement.childElementCount * 150) + 'px'
         dragSrcEl.style.top = String(220 + e.target.parentElement.childElementCount * 20) + "px";
@@ -86,39 +86,62 @@ function createCard(cardValue) {
     card.className = 'card';
     card.dataset.suit = cardValue['suit'];
     card.dataset.colour = 'hd'.includes(cardValue['suit']) ? 'r' : 'b'
-    card.dataset.number = cardValue['number'];    
-    // card.setAttribute('draggable', 'true');
-    // card.addEventListener("dragstart", handleDragStart);
+    card.dataset.number = cardValue['number'];
     return card
 }
 
 function opening(cardList) {
     let cardRows = document.getElementsByClassName('cardRow');
-    
-    cardList.forEach(function(value, index) {
-        
+    let first28 = cardList.slice(0, 28);
+    let second24 = cardList.slice(28);
+
+    first28.forEach(function(value, index) {
         let colNum = Math.floor(index / 7)
         let x = createCard(value);
         let cardPos = index % 7;
         x.style.top = String(220 + cardPos * 20) + "px";
         cardRows[colNum].append(x);
-    })
+    });
+
+    second24.forEach(function(value, index) {
+        let colNum = Math.floor(index / 6 + 4)
+        let x = createCard(value);
+        let cardPos = index % 6;
+        x.style.top = String(220 + cardPos * 20) + "px";
+        cardRows[colNum].append(x);
+    });
     setDraggableCards();
 }
 
 function setDraggableCards() {
     let mm = document.querySelectorAll('.cardRow');
     mm.forEach(function(nn) {
-        nn.childNodes.forEach(function(v) {
-            v.setAttribute('draggable', 'false');
-            v.removeEventListener("dragstart", handleDragStart);
-        });
+        if(nn.length >= 1) {
+            nn.childNodes.forEach(function(v) {
+                v.setAttribute('draggable', 'false');
+                v.removeEventListener("dragstart", handleDragStart);
+            });
+        } else {
+            nn.setAttribute('draggable', 'false');
+            nn.removeEventListener("dragstart", handleDragStart);
+        }
     })
     mm.forEach(function(value) {
 
         value.lastChild.setAttribute('draggable', 'true');
         value.lastChild.addEventListener("dragstart", handleDragStart);
     })
+}
+
+function shuffle(array) {
+    var m = array.length, t, i;
+    while (m) {
+        i = Math.floor(Math.random() * m--);
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+    }
+    return array;
 }
 
 let initialCards = createAllCardsList();
