@@ -62,3 +62,7 @@ html {
 .rightFour .cardStack .card {
     position: absolute;
 }
+
+img {
+    max-width:100%;
+}
