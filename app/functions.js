@@ -1,59 +1,58 @@
 const cardMapping = {
+    'c-1': 'ace_of_clubs',
+    'd-1': 'ace_of_diamonds',
+    'h-1': 'ace_of_hearts',
+    's-1': 'ace_of_spades',
+    'c-2': '2_of_clubs',
+    'd-2': '2_of_diamonds',
+    'h-2': '2_of_hearts',
+    's-2': '2_of_spades',
+    's-3': '3_of_clubs',
+    'd-3': '3_of_diamonds',
+    'h-3': '3_of_hearts',
+    's-3': '3_of_spades',
+    'c-4': '4_of_clubs',
+    'd-4': '4_of_diamonds',
+    'h-4': '4_of_hearts',
+    's-4': '4_of_spades',
+    'c-5': '5_of_clubs',
+    'd-5': '5_of_diamonds',
+    'h-5': '5_of_hearts',
+    's-5': '5_of_spades',
+    'c-6': '6_of_clubs',
+    'd-6': '6_of_diamonds',
+    'h-6': '6_of_hearts',
+    's-6': '6_of_spades',
+    's-7': '7_of_clubs',
+    'd-7': '7_of_diamonds',
+    'h-7': '7_of_hearts',
+    's-7': '7_of_spades',
+    'c-8': '8_of_clubs',
+    'd-8': '8_of_diamonds',
+    'h-8': '8_of_hearts',
+    's-8': '8_of_spades',
+    'c-9': '9_of_clubs',
+    'd-9': '9_of_diamonds',
+    'h-9': '9_of_hearts',
+    's-9': '9_of_spades',
     'c-10': '10_of_clubs',
     'd-10': '10_of_diamonds',
     'h-10': '10_of_hearts',
     's-10': '10_of_spades',
-    'c-2': '2_of_clubs',
-    'd-2': '2_of_diamonds',
-// 2_of_hearts.svg
-// 2_of_spades.svg
-// 3_of_clubs.svg
-// 3_of_diamonds.svg
-// 3_of_hearts.svg
-// 3_of_spades.svg
-// 4_of_clubs.svg
-// 4_of_diamonds.svg
-// 4_of_hearts.svg
-// 4_of_spades.svg
-// 5_of_clubs.svg
-// 5_of_diamonds.svg
-// 5_of_hearts.svg
-// 5_of_spades.svg
-// 6_of_clubs.svg
-// 6_of_diamonds.svg
-// 6_of_hearts.svg
-// 6_of_spades.svg
-// 7_of_clubs.svg
-// 7_of_diamonds.svg
-// 7_of_hearts.svg
-// 7_of_spades.svg
-// 8_of_clubs.svg
-// 8_of_diamonds.svg
-// 8_of_hearts.svg
-// 8_of_spades.svg
-// 9_of_clubs.svg
-// 9_of_diamonds.svg
-// 9_of_hearts.svg
-// 9_of_spades.svg
-// ace_of_clubs.svg
-// ace_of_diamonds.svg
-// ace_of_hearts.svg
-// ace_of_spades.svg
-// black_joker.svg
-// jack_of_clubs.svg
-// jack_of_diamonds.svg
-// jack_of_hearts.svg
-// jack_of_spades.svg
-// king_of_clubs.svg
-// king_of_diamonds.svg
-// king_of_hearts.svg
-// king_of_spades.svg
-// queen_of_clubs.svg
-    'd-12':'queen_of_diamonds',
-    'h-12':'queen_of_hearts',
-    's-12':'queen_of_spades',
-    'r-14':'red_joker'
-
+    'c-11': 'jack_of_clubs',
+    'd-11': 'jack_of_diamonds',
+    'h-11': 'jack_of_hearts',
+    's-11': 'jack_of_spades',
+    'c-12': 'queen_of_clubs',
+    'd-12': 'queen_of_diamonds',
+    'h-12': 'queen_of_hearts',
+    's-12': 'queen_of_spades',
+    'c-13': 'king_of_clubs',
+    'd-13': 'king_of_diamonds',
+    'h-13': 'king_of_hearts',
+    's-13': 'king_of_spades',
+    'r-14': 'red_joker',
+    'b-14': 'black_joker'
 }
 
 function createAllCardsList() {
