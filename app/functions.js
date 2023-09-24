@@ -7,7 +7,7 @@ const cardMapping = {
     'd-2': '2_of_diamonds',
     'h-2': '2_of_hearts',
     's-2': '2_of_spades',
-    's-3': '3_of_clubs',
+    'c-3': '3_of_clubs',
     'd-3': '3_of_diamonds',
     'h-3': '3_of_hearts',
     's-3': '3_of_spades',
@@ -23,7 +23,7 @@ const cardMapping = {
     'd-6': '6_of_diamonds',
     'h-6': '6_of_hearts',
     's-6': '6_of_spades',
-    's-7': '7_of_clubs',
+    'c-7': '7_of_clubs',
     'd-7': '7_of_diamonds',
     'h-7': '7_of_hearts',
     's-7': '7_of_spades',
@@ -88,49 +88,53 @@ function handleDrop(e) {
     } else {
         e.target.append(dragSrcEl);
     }
+    // remove droppable
+    let allCards = document.querySelectorAll('.card, .cardRow, .cardStack')
+    allCards.forEach(function(c) {
+        c.removeEventListener("dragover", stopDragOver);
+        c.removeEventListener('drop', handleDrop);
+    });
     setDraggableCards();
 }
 
-function makeDroppable(card) {
+function makeDroppable(grabbedCard) {
+
     // left four
     let leftFourCards = document.querySelectorAll('.leftFour .cardStack');
     leftFourCards.forEach(function(ele) {
-        // console.log(ele.innerText)
-        if(ele.innerText === '') {
+        if(ele.childElementCount === 0) {
             ele.addEventListener("dragover", stopDragOver);    
             ele.addEventListener('drop', handleDrop);
-        } else {
-            ele.removeEventListener("dragover", stopDragOver);    
-            ele.removeEventListener('drop', handleDrop);
         }
     });
     // right four
     let rightFourCards = document.querySelectorAll('.rightFour .cardStack');
     rightFourCards.forEach(function(ele) {
-        if(Number(ele.dataset.number) + 1 === Number(card.dataset.number)) {
-            if(ele.dataset.suit === card.dataset.suit) {
+        if(ele.childElementCount === 0) {
+            if(grabbedCard.dataset.number === '1') {
                 ele.addEventListener("dragover", stopDragOver);
                 ele.addEventListener('drop', handleDrop);
-            } else {
-                ele.removeEventListener("dragover", stopDragOver);
-                ele.removeEventListener('drop', handleDrop);
+            }
+        } else {
+            if (ele.lastChild.dataset.suit === grabbedCard.dataset.suit && Number(ele.lastChild.dataset.number) + 1 === Number(grabbedCard.dataset.number)) {
+                ele.lastChild.addEventListener("dragover", stopDragOver);
+                ele.lastChild.addEventListener('drop', handleDrop);
             }
         }
     });
     // bottom row
     let mm = document.querySelectorAll('.cardRow');
-    mm.forEach(function(value) {
-        if(Number(card.dataset.number) + 1 === Number(value.lastChild.dataset.number)) {
-            if(card.dataset.colour !== value.lastChild.dataset.colour) {
-                value.addEventListener("dragover", stopDragOver);
-                value.addEventListener('drop', handleDrop);
-            } else {
-                value.removeEventListener("dragover", stopDragOver);
-                value.removeEventListener('drop', handleDrop);
+    mm.forEach(function(cardStack) {
+        if(cardStack.hasChildNodes()) {
+            if(Number(grabbedCard.dataset.number) + 1 === Number(cardStack.lastChild.dataset.number)) {
+                if(grabbedCard.dataset.colour !== cardStack.lastChild.dataset.colour) {
+                    cardStack.addEventListener("dragover", stopDragOver);
+                    cardStack.addEventListener('drop', handleDrop);
+                }
             }
         } else {
-            value.removeEventListener("dragover", stopDragOver);
-            value.removeEventListener('drop', handleDrop);
+            cardStack.addEventListener("dragover", stopDragOver);
+            cardStack.addEventListener('drop', handleDrop);
         }
     });
 }
@@ -139,14 +143,13 @@ function stopDragOver(e) {e.preventDefault();}
 
 function createCard(cardValue) {
     let card = document.createElement('div');
-    let cardImage = document.createElement('img');
     let cardText = cardValue['suit'] + '-' + cardValue['number'];
-    cardImage.src = './card_images/' + cardMapping[cardText] + '.svg';
+    card.style.backgroundImage = 'url(./card_images/' + cardMapping[cardText] + '.svg)';
+    
     card.className = 'card';
     card.dataset.suit = cardValue['suit'];
     card.dataset.colour = 'hd'.includes(cardValue['suit']) ? 'r' : 'b'
     card.dataset.number = cardValue['number'];
-    card.append(cardImage);
     return card
 }
 
@@ -174,23 +177,39 @@ function opening(cardList) {
 }
 
 function setDraggableCards() {
+    let allCards = document.querySelectorAll('.card')
+    allCards.forEach(function(c) {
+        c.setAttribute('draggable', 'false');
+        c.removeEventListener("dragstart", handleDragStart);
+    });
+
+    let topCardStacks = document.querySelectorAll('.fourBlock .cardStack')
+    topCardStacks.forEach(function(cardStack) {
+        if(cardStack.hasChildNodes()) {
+            cardStack.lastChild.setAttribute('draggable', 'true');
+            cardStack.lastChild.addEventListener("dragstart", handleDragStart);
+        }
+    });
+
     let mm = document.querySelectorAll('.cardRow');
-    mm.forEach(function(nn) {
-        if(nn.length >= 1) {
-            nn.childNodes.forEach(function(v) {
-                v.setAttribute('draggable', 'false');
-                v.removeEventListener("dragstart", handleDragStart);
-            });
-        } else {
-            nn.setAttribute('draggable', 'false');
-            nn.removeEventListener("dragstart", handleDragStart);
+    mm.forEach(function(value) {
+        if(value.hasChildNodes()) {
+            value.lastChild.setAttribute('draggable', 'true');
+            value.lastChild.addEventListener("dragstart", handleDragStart);
         }
     })
-    mm.forEach(function(value) {
+    // mm.forEach(function(nn) {
+    //     if(nn.length >= 1) {
+    //         nn.childNodes.forEach(function(v) {
+    //             v.setAttribute('draggable', 'false');
+    //             v.removeEventListener("dragstart", handleDragStart);
+    //         });
+    //     } else {
+    //         nn.setAttribute('draggable', 'false');
+    //         nn.removeEventListener("dragstart", handleDragStart);
+    //     }
+    // })
 
-        value.lastChild.setAttribute('draggable', 'true');
-        value.lastChild.addEventListener("dragstart", handleDragStart);
-    })
 }
 
 function shuffle(array) {

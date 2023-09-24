@@ -52,10 +52,12 @@ html {
 
 .card {
     height: 170px;
-    width: 110px;
+    width: 117px;
     background-color: white;
+    background-size: 117px 170px;
     border-radius: 7px;
-    border: 2px solid black; 
+    border: 1px solid black; 
+    /* border: none; */
     position: absolute;
 }
 
