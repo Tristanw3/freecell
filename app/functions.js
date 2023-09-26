@@ -198,17 +198,7 @@ function setDraggableCards() {
             value.lastChild.addEventListener("dragstart", handleDragStart);
         }
     })
-    // mm.forEach(function(nn) {
-    //     if(nn.length >= 1) {
-    //         nn.childNodes.forEach(function(v) {
-    //             v.setAttribute('draggable', 'false');
-    //             v.removeEventListener("dragstart", handleDragStart);
-    //         });
-    //     } else {
-    //         nn.setAttribute('draggable', 'false');
-    //         nn.removeEventListener("dragstart", handleDragStart);
-    //     }
-    // })
+
 
 }
 
