@@ -55,6 +55,24 @@ const cardMapping = {
     'b-14': 'black_joker'
 }
 
+let gameInfo = {
+    moveTracker: [],
+    addMove(card, location) {
+        this.moveTracker.push({
+            'card': card,
+            'location': location
+    });
+    },
+    undoMove() {
+        if(this.moveTracker.length === 0) return;
+        let lastMove = this.moveTracker.pop();
+        let lastMoveSpot = document.getElementsByClassName(lastMove.location)[0];
+        appendCard(lastMoveSpot, lastMove.card)    
+    }
+}
+
+
+
 function createAllCardsList() {
     let allCards = [];
     let cardSuit = ['s', 'h', 'c', 'd'];
@@ -75,19 +93,35 @@ function handleDragStart(e) {
     makeDroppable(dragSrcEl)
 }
 
+function getTargetLocation(event) {
+    let target;
+    if(event.target.className === 'card') {
+        target = event.target.parentElement
+    } else {
+        target = event.target
+    }
+    return target
+}
+
+function appendCard(dropSpot, card) {
+    // fix card offset for bottom rows
+    if(dropSpot.className.includes('cardRow')) {
+        card.style.top = String(220 + dropSpot.childElementCount * 20) + "px";
+    } else {
+        card.style.top = '';
+    }
+    dropSpot.append(card);
+}
+
 function handleDrop(e) {
     e.stopPropagation();
-    if(e.target.parentElement.className.includes('cardRow')) {
-        // dragSrcEl.style.top = String(e.target.parentElement.childElementCount * 150) + 'px'
-        dragSrcEl.style.top = String(220 + e.target.parentElement.childElementCount * 20) + "px";
-    } else {
-        dragSrcEl.style.top = '';
-    }
-    if (e.target.className === 'card') {
-        e.target.parentElement.append(dragSrcEl);
-    } else {
-        e.target.append(dragSrcEl);
-    }
+    // Track move
+    let targetDropElement = getTargetLocation(e);
+    let location = dragSrcEl.parentElement.className.slice(-2);
+
+    appendCard(targetDropElement, dragSrcEl)
+    gameInfo.addMove(dragSrcEl, location)
+    
     // remove droppable
     let allCards = document.querySelectorAll('.card, .cardRow, .cardStack')
     allCards.forEach(function(c) {
@@ -198,21 +232,27 @@ function setDraggableCards() {
             value.lastChild.addEventListener("dragstart", handleDragStart);
         }
     })
-
-
 }
 
 function shuffle(array) {
-    var m = array.length, t, i;
+    let m = array.length;
     while (m) {
-        i = Math.floor(Math.random() * m--);
-        t = array[m];
+        let i = Math.floor(Math.random() * m--);
+        let t = array[m];
         array[m] = array[i];
         array[i] = t;
     }
     return array;
 }
 
-let initialCards = createAllCardsList();
+function KeyPress(e) {
+    var evtobj = window.event? event : e
+    if (evtobj.keyCode == 90 && evtobj.ctrlKey) {
+        gameInfo.undoMove();
+    }
+}
 
+document.onkeydown = KeyPress;
+
+let initialCards = createAllCardsList();
 opening(initialCards)
