@@ -55,22 +55,73 @@ const cardMapping = {
     'b-14': 'black_joker'
 }
 
-let gameInfo = {
-    moveTracker: [],
+let moveTracker = {
+    trackingArray: [],
     addMove(card, dropLocation) {
         const location = dropLocation.className.slice(-2);
-        this.moveTracker.push({
+        this.trackingArray.push({
             'card': card,
             'location': location
         });
     },
     undoMove() {
-        if(this.moveTracker.length === 0) return;
-        let lastMove = this.moveTracker.pop();
+        if(this.trackingArray.length === 0) return;
+        let lastMove = this.trackingArray.pop();
         let lastMoveSpot = document.getElementsByClassName(lastMove.location)[0];
         appendCard(lastMove.card, lastMoveSpot);   
     },
     grabbedCard: null
+}
+
+function opening() {
+    const cardDataArray = [];
+    const cardSuit = ['s', 'h', 'c', 'd'];
+    const cardVal = [1,2,3,4,5,6,7,8,9,10,11,12,13];
+    cardSuit.forEach(function(suit) {
+        cardVal.forEach(function(value) {
+            cardDataArray.push({'suit': suit, 'number': String(value)})
+        });
+    });
+    let shuffledCardDataArray = shuffle(cardDataArray);
+    let first28 = shuffledCardDataArray.slice(0, 28);
+    let second24 = shuffledCardDataArray.slice(28);
+    
+    let cardRows = document.getElementsByClassName('cardRow');
+    first28.forEach(function(cardData, index) {
+        const columnNumber = Math.floor(index / 7);
+        const card = createCard(cardData);
+        appendCard(card, cardRows[columnNumber]);
+    });
+
+    second24.forEach(function(cardData, index) {
+        const columnNumber = Math.floor(index / 6 + 4);
+        const card = createCard(cardData);
+        appendCard(card, cardRows[columnNumber]);
+    });
+    document.onkeydown = keyPress;
+}
+
+function createCard(cardData) {
+    let card = document.createElement('div');
+    let cardText = cardData['suit'] + '-' + cardData['number'];
+    card.style.backgroundImage = 'url(./card_images/' + cardMapping[cardText] + '.svg)';
+    
+    card.className = 'card';
+    card.dataset.suit = cardData['suit'];
+    card.dataset.colour = 'hd'.includes(cardData['suit']) ? 'r' : 'b'
+    card.dataset.number = cardData['number'];
+    return card
+}
+
+function shuffle(array) {
+    let m = array.length;
+    while (m) {
+        let i = Math.floor(Math.random() * m--);
+        let t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+    }
+    return array;
 }
 
 function getAllMoveableCards(){
@@ -104,14 +155,21 @@ function checkWin() {
     }
 }
 
+function keyPress(e) {
+    var evtobj = window.event? event : e
+    if (evtobj.keyCode == 90 && evtobj.ctrlKey) {
+        moveTracker.undoMove();
+    }
+}
+
 function addAllClickEvents() {
     let moveCards = getAllMoveableCards();
     moveCards.forEach(function(card) {
-        card.addEventListener('click', clickEvent)
+        card.addEventListener('click', handleClick)
     });
 }
 
-function clickEvent(event) {
+function handleClick(event) {
     const clickedCard = event.target;
     let hasMoved = false;
     const allTopRightCards = document.querySelectorAll('.rightFour .cardStack');
@@ -119,7 +177,7 @@ function clickEvent(event) {
     hasMoved = allTopRightCardsArray.some(function(targetStack) {
         const checkAcePlacement = !targetStack.hasChildNodes() && clickedCard.dataset.number === '1';
         if(checkAcePlacement) {
-            gameInfo.addMove(clickedCard, clickedCard.parentElement);
+            moveTracker.addMove(clickedCard, clickedCard.parentElement);
             appendCard(clickedCard, targetStack);
             return true
         } else if (targetStack.hasChildNodes()) {
@@ -130,7 +188,7 @@ function clickEvent(event) {
                 && Number(cardData.number) === Number(stackData.number) + 1
             );
             if(checkNumberCardPlacement) {
-                gameInfo.addMove(clickedCard, clickedCard.parentElement);
+                moveTracker.addMove(clickedCard, clickedCard.parentElement);
                 appendCard(clickedCard, targetStack);
                 return true
             }
@@ -149,12 +207,12 @@ function clickEvent(event) {
                 && Number(cardData.number) + 1 === Number(stackData.number)
             );
             if(checkDropLower) {
-                gameInfo.addMove(clickedCard, clickedCard.parentElement);
+                moveTracker.addMove(clickedCard, clickedCard.parentElement);
                 appendCard(clickedCard, targetStack);
                 return true;
             }
         } else {
-            gameInfo.addMove(clickedCard, clickedCard.parentElement);
+            moveTracker.addMove(clickedCard, clickedCard.parentElement);
             appendCard(clickedCard, targetStack);
             return true;
         }
@@ -165,40 +223,16 @@ function clickEvent(event) {
     const allTopLeftCardsArray = [...allTopLeftCards];
     allTopLeftCardsArray.some(function(targetStack) {
         if(!targetStack.hasChildNodes()) {
-            gameInfo.addMove(clickedCard, clickedCard.parentElement);
+            moveTracker.addMove(clickedCard, clickedCard.parentElement);
             appendCard(clickedCard, targetStack);
             return true
         }
     });
 }
 
-function createAllCardsList() {
-    let allCards = [];
-    let cardSuit = ['s', 'h', 'c', 'd'];
-    let cardVal = [1,2,3,4,5,6,7,8,9,10,11,12,13];
-    cardSuit.forEach(function(suit) {
-        cardVal.forEach(function(value) {
-            allCards.push({'suit': suit, 'number': String(value)})
-        });
-    });
-    let shuffledCards = shuffle(allCards);
-
-    return shuffledCards;
-}
-
 function handleDragStart(event) {
-    gameInfo.grabbedCard = event.target;
-    makeDroppable(gameInfo.grabbedCard)
-}
-
-function getTargetLocation(event) {
-    let target;
-    if(event.target.className === 'card') {
-        target = event.target.parentElement;
-    } else {
-        target = event.target;
-    }
-    return target
+    moveTracker.grabbedCard = event.target;
+    makeDroppable(moveTracker.grabbedCard)
 }
 
 function appendCard(card, targetCardDropPoint) {
@@ -217,19 +251,10 @@ function appendCard(card, targetCardDropPoint) {
 
 function handleDrop(event) {
     event.stopPropagation();
-    // Track move
-    let targetCardDropPoint = getTargetLocation(event);
-    gameInfo.addMove(gameInfo.grabbedCard, gameInfo.grabbedCard.parentElement);
-    appendCard(gameInfo.grabbedCard, targetCardDropPoint);  
-}
-
-function removeEventListeners() {
-    let allCardsAndDropPoints = document.querySelectorAll('.card, .cardRow, .cardStack')
-    allCardsAndDropPoints.forEach(function(position) {
-        position.removeEventListener('click', clickEvent)
-        position.removeEventListener("dragover", stopDragOver);
-        position.removeEventListener('drop', handleDrop);
-    });  
+    const dropPoint = event.target;
+    const targetCardDropPoint = dropPoint.className === 'card' ? dropPoint.parentElement : dropPoint.target;
+    moveTracker.addMove(moveTracker.grabbedCard, moveTracker.grabbedCard.parentElement);
+    appendCard(moveTracker.grabbedCard, targetCardDropPoint);  
 }
 
 function makeDroppable(grabbedCard) {
@@ -278,37 +303,7 @@ function makeDroppable(grabbedCard) {
     });
 }
 
-function stopDragOver(e) {e.preventDefault();}
-
-function createCard(cardValue) {
-    let card = document.createElement('div');
-    let cardText = cardValue['suit'] + '-' + cardValue['number'];
-    card.style.backgroundImage = 'url(./card_images/' + cardMapping[cardText] + '.svg)';
-    
-    card.className = 'card';
-    card.dataset.suit = cardValue['suit'];
-    card.dataset.colour = 'hd'.includes(cardValue['suit']) ? 'r' : 'b'
-    card.dataset.number = cardValue['number'];
-    return card
-}
-
-function opening(cardList) {
-    let cardRows = document.getElementsByClassName('cardRow');
-    let first28 = cardList.slice(0, 28);
-    let second24 = cardList.slice(28);
-
-    first28.forEach(function(cardData, index) {
-        let columnNumber = Math.floor(index / 7);
-        let card = createCard(cardData);
-        appendCard(card, cardRows[columnNumber]);
-    });
-
-    second24.forEach(function(cardData, index) {
-        let columnNumber = Math.floor(index / 6 + 4);
-        let card = createCard(cardData);
-        appendCard(card, cardRows[columnNumber]);
-    });
-}
+function stopDragOver(event) {event.preventDefault();}
 
 function setDraggableCards() {
     let allCards = document.querySelectorAll('.card')
@@ -334,27 +329,14 @@ function setDraggableCards() {
     })
 }
 
-function shuffle(array) {
-    let m = array.length;
-    while (m) {
-        let i = Math.floor(Math.random() * m--);
-        let t = array[m];
-        array[m] = array[i];
-        array[i] = t;
-    }
-    return array;
+function removeEventListeners() {
+    const allCardsAndDropPoints = document.querySelectorAll('.card, .cardRow, .cardStack')
+    allCardsAndDropPoints.forEach(function(position) {
+        position.removeEventListener('click', handleClick)
+        position.removeEventListener("dragover", stopDragOver);
+        position.removeEventListener('drop', handleDrop);
+    });  
 }
 
-function KeyPress(e) {
-    var evtobj = window.event? event : e
-    if (evtobj.keyCode == 90 && evtobj.ctrlKey) {
-        gameInfo.undoMove();
-    }
-}
 
-document.onkeydown = KeyPress;
-
-let initialCards = createAllCardsList();
-opening(initialCards)
-
-getAllMoveableCards()
+opening()
