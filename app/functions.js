@@ -57,21 +57,100 @@ const cardMapping = {
 
 let gameInfo = {
     moveTracker: [],
-    addMove(card, location) {
+    addMove(card, dropLocation) {
+        const location = dropLocation.className.slice(-2);
         this.moveTracker.push({
             'card': card,
             'location': location
-    });
+        });
     },
     undoMove() {
         if(this.moveTracker.length === 0) return;
         let lastMove = this.moveTracker.pop();
         let lastMoveSpot = document.getElementsByClassName(lastMove.location)[0];
         appendCard(lastMoveSpot, lastMove.card)    
-    }
+    },
+    grabbedCard: null
+}
+
+function getAllMoveableCards(){
+    const allMoveableCardsSelectorQuery = `
+        .leftFour .cardStack .card,
+        .rightFour .cardStack .card:last-child,
+        .cardRow .card:last-child
+    `;
+    const allMoveableCards = document.querySelectorAll(allMoveableCardsSelectorQuery);
+
+    // working on moving stacks in bottom row
+    // const topFour = document.querySelectorAll('.leftFour .cardStack');
+    // let emptyTopCardSpaces = 0;
+    // topFour.forEach(function(cardStack) {
+    //     if (!cardStack.hasChildNodes) {
+    //         emptyTopCardSpaces ++;
+    //     }
+    // });
+
+
+    return allMoveableCards
 }
 
 
+
+function addAllClickEvents() {
+    let moveCards = getAllMoveableCards();
+    moveCards.forEach(function(card) {
+        card.addEventListener('click', clickEvent)
+    });
+}
+
+function clickEvent(event) {
+    // let checkExitClickEventFunction = false;
+    const clickedCard = event.target;
+    let hasMoved = false;
+    const allTopRightCards = document.querySelectorAll('.rightFour .cardStack');
+    const allTopRightCardsArray = [...allTopRightCards];
+    hasMoved = allTopRightCardsArray.some(function(targetStack) {
+        const checkAcePlacement = targetStack.childElementCount === 0 && clickedCard.dataset.number === '1';
+        if(checkAcePlacement) {
+            gameInfo.addMove(clickedCard, clickedCard.parentElement);
+            appendCard(targetStack, clickedCard);
+            return true
+        }
+        if(targetStack.hasChildNodes()) {
+            const checkNumberCardPlacement = targetStack.lastChild.dataset.suit === clickedCard.dataset.suit && Number(targetStack.lastChild.dataset.number) + 1 === Number(clickedCard.dataset.number);
+            if(checkNumberCardPlacement) {
+                gameInfo.addMove(clickedCard, clickedCard.parentElement);
+                appendCard(targetStack, clickedCard);
+                return true
+            }
+        }
+    });
+    if(hasMoved) return;
+
+    const allLowerMoveableCards = document.querySelectorAll('.cardRow .card:last-child');
+    const allLowerMoveableCardsArray = [...allLowerMoveableCards];
+    hasMoved = allLowerMoveableCardsArray.some(function(targetCard){
+        if(
+            !(clickedCard.dataset.colour === targetCard.dataset.colour)
+            && Number(clickedCard.dataset.number) + 1 === Number(targetCard.dataset.number)
+        ) {
+            gameInfo.addMove(clickedCard, clickedCard.parentElement);
+            appendCard(targetCard.parentElement, clickedCard);
+            return true;
+        }
+    });
+    if(hasMoved) return;
+
+    const allTopLeftCards = document.querySelectorAll('.leftFour .cardStack');
+    const allTopLeftCardsArray = [...allTopLeftCards];
+    allTopLeftCardsArray.some(function(targetStack) {
+        if(!targetStack.hasChildNodes()) {
+            gameInfo.addMove(clickedCard, clickedCard.parentElement);
+            appendCard(targetStack, clickedCard);
+            return true
+        }
+    });
+}
 
 function createAllCardsList() {
     let allCards = [];
@@ -87,10 +166,9 @@ function createAllCardsList() {
     return shuffledCards;
 }
 
-let dragSrcEl = null;
 function handleDragStart(e) {
-    dragSrcEl = e.target
-    makeDroppable(dragSrcEl)
+    gameInfo.grabbedCard = e.target
+    makeDroppable(gameInfo.grabbedCard)
 }
 
 function getTargetLocation(event) {
@@ -111,28 +189,32 @@ function appendCard(dropSpot, card) {
         card.style.top = '';
     }
     dropSpot.append(card);
+    removeEventListeners();
+    setDraggableCards();
+    addAllClickEvents();
 }
 
 function handleDrop(e) {
     e.stopPropagation();
     // Track move
     let targetDropElement = getTargetLocation(e);
-    let location = dragSrcEl.parentElement.className.slice(-2);
+    // let location = gameInfo.grabbedCard.parentElement.className.slice(-2);
 
-    appendCard(targetDropElement, dragSrcEl)
-    gameInfo.addMove(dragSrcEl, location)
-    
-    // remove droppable
+    gameInfo.addMove(gameInfo.grabbedCard, gameInfo.grabbedCard.parentElement);
+    appendCard(targetDropElement, gameInfo.grabbedCard);  
+}
+
+function removeEventListeners() {
     let allCards = document.querySelectorAll('.card, .cardRow, .cardStack')
     allCards.forEach(function(c) {
+        c.removeEventListener('click', clickEvent)
         c.removeEventListener("dragover", stopDragOver);
         c.removeEventListener('drop', handleDrop);
-    });
-    setDraggableCards();
+    });  
 }
 
 function makeDroppable(grabbedCard) {
-
+    handleDrop.grabbedCard = grabbedCard
     // left four
     let leftFourCards = document.querySelectorAll('.leftFour .cardStack');
     leftFourCards.forEach(function(ele) {
@@ -208,6 +290,7 @@ function opening(cardList) {
         cardRows[colNum].append(x);
     });
     setDraggableCards();
+    addAllClickEvents();
 }
 
 function setDraggableCards() {
@@ -256,3 +339,5 @@ document.onkeydown = KeyPress;
 
 let initialCards = createAllCardsList();
 opening(initialCards)
+
+getAllMoveableCards()
