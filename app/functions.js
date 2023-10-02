@@ -68,7 +68,7 @@ let gameInfo = {
         if(this.moveTracker.length === 0) return;
         let lastMove = this.moveTracker.pop();
         let lastMoveSpot = document.getElementsByClassName(lastMove.location)[0];
-        appendCard(lastMoveSpot, lastMove.card)    
+        appendCard(lastMove.card, lastMoveSpot);   
     },
     grabbedCard: null
 }
@@ -97,13 +97,12 @@ function getAllMoveableCards(){
 function checkWin() {
     const cardCount = document.querySelectorAll('.rightFour .cardStack .card').length;
     if(cardCount === 52) {
+        alert('win')
         return true;
     } else {
         return false;
     }
 }
-
-
 
 function addAllClickEvents() {
     let moveCards = getAllMoveableCards();
@@ -113,38 +112,50 @@ function addAllClickEvents() {
 }
 
 function clickEvent(event) {
-    // let checkExitClickEventFunction = false;
     const clickedCard = event.target;
     let hasMoved = false;
     const allTopRightCards = document.querySelectorAll('.rightFour .cardStack');
     const allTopRightCardsArray = [...allTopRightCards];
     hasMoved = allTopRightCardsArray.some(function(targetStack) {
-        const checkAcePlacement = targetStack.childElementCount === 0 && clickedCard.dataset.number === '1';
+        const checkAcePlacement = !targetStack.hasChildNodes() && clickedCard.dataset.number === '1';
         if(checkAcePlacement) {
             gameInfo.addMove(clickedCard, clickedCard.parentElement);
-            appendCard(targetStack, clickedCard);
+            appendCard(clickedCard, targetStack);
             return true
-        }
-        if(targetStack.hasChildNodes()) {
-            const checkNumberCardPlacement = targetStack.lastChild.dataset.suit === clickedCard.dataset.suit && Number(targetStack.lastChild.dataset.number) + 1 === Number(clickedCard.dataset.number);
+        } else if (targetStack.hasChildNodes()) {
+            const cardData = clickedCard.dataset;
+            const stackData = targetStack.lastChild.dataset;
+            const checkNumberCardPlacement = (
+                cardData.suit === stackData.suit
+                && Number(cardData.number) === Number(stackData.number) + 1
+            );
             if(checkNumberCardPlacement) {
                 gameInfo.addMove(clickedCard, clickedCard.parentElement);
-                appendCard(targetStack, clickedCard);
+                appendCard(clickedCard, targetStack);
                 return true
             }
         }
     });
     if(hasMoved) return;
 
-    const allLowerMoveableCards = document.querySelectorAll('.cardRow .card:last-child');
+    const allLowerMoveableCards = document.querySelectorAll('.cardRow');
     const allLowerMoveableCardsArray = [...allLowerMoveableCards];
-    hasMoved = allLowerMoveableCardsArray.some(function(targetCard){
-        if(
-            !(clickedCard.dataset.colour === targetCard.dataset.colour)
-            && Number(clickedCard.dataset.number) + 1 === Number(targetCard.dataset.number)
-        ) {
+    hasMoved = allLowerMoveableCardsArray.some(function(targetStack){
+        if(targetStack.hasChildNodes()) {
+            const cardData = clickedCard.dataset;
+            const stackData = targetStack.lastChild.dataset;
+            const checkDropLower = (
+                cardData.colour !== stackData.colour
+                && Number(cardData.number) + 1 === Number(stackData.number)
+            );
+            if(checkDropLower) {
+                gameInfo.addMove(clickedCard, clickedCard.parentElement);
+                appendCard(clickedCard, targetStack);
+                return true;
+            }
+        } else {
             gameInfo.addMove(clickedCard, clickedCard.parentElement);
-            appendCard(targetCard.parentElement, clickedCard);
+            appendCard(clickedCard, targetStack);
             return true;
         }
     });
@@ -155,7 +166,7 @@ function clickEvent(event) {
     allTopLeftCardsArray.some(function(targetStack) {
         if(!targetStack.hasChildNodes()) {
             gameInfo.addMove(clickedCard, clickedCard.parentElement);
-            appendCard(targetStack, clickedCard);
+            appendCard(clickedCard, targetStack);
             return true
         }
     });
@@ -175,87 +186,91 @@ function createAllCardsList() {
     return shuffledCards;
 }
 
-function handleDragStart(e) {
-    gameInfo.grabbedCard = e.target
+function handleDragStart(event) {
+    gameInfo.grabbedCard = event.target;
     makeDroppable(gameInfo.grabbedCard)
 }
 
 function getTargetLocation(event) {
     let target;
     if(event.target.className === 'card') {
-        target = event.target.parentElement
+        target = event.target.parentElement;
     } else {
-        target = event.target
+        target = event.target;
     }
     return target
 }
 
-function appendCard(dropSpot, card) {
+function appendCard(card, targetCardDropPoint) {
     // fix card offset for bottom rows
-    if(dropSpot.className.includes('cardRow')) {
-        card.style.top = String(220 + dropSpot.childElementCount * 20) + "px";
+    if(targetCardDropPoint.className.includes('cardRow')) {
+        card.style.top = String(220 + targetCardDropPoint.childElementCount * 20) + "px";
     } else {
         card.style.top = '';
     }
-    dropSpot.append(card);
+    targetCardDropPoint.append(card);
     removeEventListeners();
     checkWin();
     setDraggableCards();
     addAllClickEvents();
 }
 
-function handleDrop(e) {
-    e.stopPropagation();
+function handleDrop(event) {
+    event.stopPropagation();
     // Track move
-    let targetDropElement = getTargetLocation(e);
+    let targetCardDropPoint = getTargetLocation(event);
     gameInfo.addMove(gameInfo.grabbedCard, gameInfo.grabbedCard.parentElement);
-    appendCard(targetDropElement, gameInfo.grabbedCard);  
+    appendCard(gameInfo.grabbedCard, targetCardDropPoint);  
 }
 
 function removeEventListeners() {
-    let allCards = document.querySelectorAll('.card, .cardRow, .cardStack')
-    allCards.forEach(function(c) {
-        c.removeEventListener('click', clickEvent)
-        c.removeEventListener("dragover", stopDragOver);
-        c.removeEventListener('drop', handleDrop);
+    let allCardsAndDropPoints = document.querySelectorAll('.card, .cardRow, .cardStack')
+    allCardsAndDropPoints.forEach(function(position) {
+        position.removeEventListener('click', clickEvent)
+        position.removeEventListener("dragover", stopDragOver);
+        position.removeEventListener('drop', handleDrop);
     });  
 }
 
 function makeDroppable(grabbedCard) {
-    handleDrop.grabbedCard = grabbedCard
     // left four
-    let leftFourCards = document.querySelectorAll('.leftFour .cardStack');
-    leftFourCards.forEach(function(ele) {
-        if(ele.childElementCount === 0) {
-            ele.addEventListener("dragover", stopDragOver);    
-            ele.addEventListener('drop', handleDrop);
+    const leftCards = document.querySelectorAll('.leftFour .cardStack');
+    leftCards.forEach(function(targetStack) {
+        if(targetStack.childElementCount === 0) {
+            targetStack.addEventListener("dragover", stopDragOver);    
+            targetStack.addEventListener('drop', handleDrop);
         }
     });
     // right four
-    let rightFourCards = document.querySelectorAll('.rightFour .cardStack');
-    rightFourCards.forEach(function(ele) {
-        if(ele.childElementCount === 0) {
-            if(grabbedCard.dataset.number === '1') {
-                ele.addEventListener("dragover", stopDragOver);
-                ele.addEventListener('drop', handleDrop);
-            }
-        } else {
-            if (ele.lastChild.dataset.suit === grabbedCard.dataset.suit && Number(ele.lastChild.dataset.number) + 1 === Number(grabbedCard.dataset.number)) {
-                ele.lastChild.addEventListener("dragover", stopDragOver);
-                ele.lastChild.addEventListener('drop', handleDrop);
+    let rightCards = document.querySelectorAll('.rightFour .cardStack');
+    rightCards.forEach(function(targetStack) {
+        const checkAcePlacement = !targetStack.hasChildNodes() && grabbedCard.dataset.number === '1';
+        if(checkAcePlacement) {
+            targetStack.addEventListener("dragover", stopDragOver);
+            targetStack.addEventListener('drop', handleDrop);
+        } else if (targetStack.hasChildNodes()) {
+            const checkNumberCardPlacement = (
+                targetStack.lastChild.dataset.suit === grabbedCard.dataset.suit 
+                && Number(targetStack.lastChild.dataset.number) + 1 === Number(grabbedCard.dataset.number)
+            );
+            if (checkNumberCardPlacement) {
+                targetStack.lastChild.addEventListener("dragover", stopDragOver);
+                targetStack.lastChild.addEventListener('drop', handleDrop);
             }
         }
     });
     // bottom row
-    let mm = document.querySelectorAll('.cardRow');
-    mm.forEach(function(cardStack) {
+    let bottomCards = document.querySelectorAll('.cardRow');
+    bottomCards.forEach(function(cardStack) {
         if(cardStack.hasChildNodes()) {
-            if(Number(grabbedCard.dataset.number) + 1 === Number(cardStack.lastChild.dataset.number)) {
-                if(grabbedCard.dataset.colour !== cardStack.lastChild.dataset.colour) {
-                    cardStack.addEventListener("dragover", stopDragOver);
-                    cardStack.addEventListener('drop', handleDrop);
-                }
-            }
+            const checkDropLower = (
+                grabbedCard.dataset.colour !== cardStack.lastChild.dataset.colour
+                && Number(grabbedCard.dataset.number) + 1 === Number(cardStack.lastChild.dataset.number)
+            );
+            if(checkDropLower) {
+                cardStack.addEventListener("dragover", stopDragOver);
+                cardStack.addEventListener('drop', handleDrop);
+            } 
         } else {
             cardStack.addEventListener("dragover", stopDragOver);
             cardStack.addEventListener('drop', handleDrop);
@@ -282,23 +297,17 @@ function opening(cardList) {
     let first28 = cardList.slice(0, 28);
     let second24 = cardList.slice(28);
 
-    first28.forEach(function(value, index) {
-        let colNum = Math.floor(index / 7)
-        let x = createCard(value);
-        let cardPos = index % 7;
-        x.style.top = String(220 + cardPos * 20) + "px";
-        cardRows[colNum].append(x);
+    first28.forEach(function(cardData, index) {
+        let columnNumber = Math.floor(index / 7);
+        let card = createCard(cardData);
+        appendCard(card, cardRows[columnNumber]);
     });
 
-    second24.forEach(function(value, index) {
-        let colNum = Math.floor(index / 6 + 4)
-        let x = createCard(value);
-        let cardPos = index % 6;
-        x.style.top = String(220 + cardPos * 20) + "px";
-        cardRows[colNum].append(x);
+    second24.forEach(function(cardData, index) {
+        let columnNumber = Math.floor(index / 6 + 4);
+        let card = createCard(cardData);
+        appendCard(card, cardRows[columnNumber]);
     });
-    setDraggableCards();
-    addAllClickEvents();
 }
 
 function setDraggableCards() {
