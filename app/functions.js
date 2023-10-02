@@ -94,6 +94,15 @@ function getAllMoveableCards(){
     return allMoveableCards
 }
 
+function checkWin() {
+    const cardCount = document.querySelectorAll('.rightFour .cardStack .card').length;
+    if(cardCount === 52) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 
 
 function addAllClickEvents() {
@@ -190,6 +199,7 @@ function appendCard(dropSpot, card) {
     }
     dropSpot.append(card);
     removeEventListeners();
+    checkWin();
     setDraggableCards();
     addAllClickEvents();
 }
@@ -198,8 +208,6 @@ function handleDrop(e) {
     e.stopPropagation();
     // Track move
     let targetDropElement = getTargetLocation(e);
-    // let location = gameInfo.grabbedCard.parentElement.className.slice(-2);
-
     gameInfo.addMove(gameInfo.grabbedCard, gameInfo.grabbedCard.parentElement);
     appendCard(targetDropElement, gameInfo.grabbedCard);  
 }
