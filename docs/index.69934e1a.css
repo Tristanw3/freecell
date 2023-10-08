@@ -1,0 +1,68 @@
+html {
+  background-color: green;
+  width: 100%;
+  height: 80vh;
+}
+
+.topCardsBar {
+  border: 2px solid #000;
+  justify-content: space-between;
+  height: 200px;
+  display: flex;
+}
+
+.fourBlock {
+  justify-content: space-between;
+  align-items: center;
+  width: 700px;
+  height: 180px;
+  margin: 10px;
+  display: flex;
+}
+
+.leftFour {
+  margin-left: 50px;
+}
+
+.rightFour {
+  margin-right: 50px;
+}
+
+.cardStack {
+  border: 2px solid #000;
+  border-radius: 7px;
+  width: 119px;
+  height: 172px;
+}
+
+.playSection {
+  justify-content: space-around;
+  width: 100%;
+  padding-top: 10px;
+  display: flex;
+}
+
+.cardRow {
+  width: 110px;
+  height: 200px;
+}
+
+.card {
+  background-color: #fff;
+  background-size: 117px 170px;
+  border: 1px solid #000;
+  border-radius: 7px;
+  width: 117px;
+  height: 170px;
+  position: absolute;
+}
+
+.rightFour .cardStack .card {
+  position: absolute;
+}
+
+img {
+  max-width: 100%;
+}
+
+/*# sourceMappingURL=index.69934e1a.css.map */
