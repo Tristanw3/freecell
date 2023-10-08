@@ -55,20 +55,10 @@ const cardMapping = {
     'b-14': 'black_joker'
 }
 
-interface trackingCard {
-    'card': string,
-    'location': string
-}
-
-interface cardDataObject {
-    'suit': string,
-    'number': string
-}
-
-const moveTracker: object = {
+const moveTracker = {
     trackingArray: [],
-    addMove(card: HTMLElement, dropLocation: HTMLElement) {
-        const location: string = dropLocation.className.slice(-2);
+    addMove(card, dropLocation) {
+        const location = dropLocation.className.slice(-2);
         this.trackingArray.push({
             'card': card,
             'location': location
@@ -76,44 +66,44 @@ const moveTracker: object = {
     },
     undoMove() {
         if(this.trackingArray.length === 0) return;
-        let lastMove: trackingCard = this.trackingArray.pop();
-        let lastMoveSpot: Node = document.getElementsByClassName(lastMove.location)[0];
+        let lastMove = this.trackingArray.pop();
+        let lastMoveSpot = document.getElementsByClassName(lastMove.location)[0];
         appendCard(lastMove.card, lastMoveSpot);   
     },
     grabbedCard: null
 }
 
-function opening(): void {
-    const cardDataArray: cardDataObject[] = [];
-    const cardSuit: string[] = ['s', 'h', 'c', 'd'];
-    const cardVal: number[] = [1,2,3,4,5,6,7,8,9,10,11,12,13];
-    cardSuit.forEach(function(suit: string) {
-        cardVal.forEach(function(value: number) {
+function opening() {
+    const cardDataArray = [];
+    const cardSuit = ['s', 'h', 'c', 'd'];
+    const cardVal = [1,2,3,4,5,6,7,8,9,10,11,12,13];
+    cardSuit.forEach(function(suit) {
+        cardVal.forEach(function(value) {
             cardDataArray.push({'suit': suit, 'number': String(value)})
         });
     });
-    const shuffledCardDataArray: cardDataObject[] = shuffle(cardDataArray);
+    const shuffledCardDataArray = shuffle(cardDataArray);
     let first28 = shuffledCardDataArray.slice(0, 28);
     let second24 = shuffledCardDataArray.slice(28);
     
-    let cardRows: NodeListOf<Element> = document.querySelectorAll('.cardRow');
-    first28.forEach(function(cardData: cardDataObject, index: number) {
+    let cardRows = document.querySelectorAll('.cardRow');
+    first28.forEach(function(cardData, index) {
         const columnNumber = Math.floor(index / 7);
         const card = createCard(cardData);
         appendCard(card, cardRows[columnNumber]);
     });
 
-    second24.forEach(function(cardData: cardDataObject, index: number) {
-        const columnNumber: number = Math.floor(index / 6 + 4);
+    second24.forEach(function(cardData, index) {
+        const columnNumber = Math.floor(index / 6 + 4);
         const card = createCard(cardData);
         appendCard(card, cardRows[columnNumber]);
     });
     document.onkeydown = keyPress;
 }
 
-function createCard(cardData): HTMLElement {
-    let card: HTMLElement = document.createElement('div');
-    let cardText: string = cardData['suit'] + '-' + cardData['number'];
+function createCard(cardData) {
+    let card = document.createElement('div');
+    let cardText = cardData['suit'] + '-' + cardData['number'];
     card.style.backgroundImage = 'url(./card_images/' + cardMapping[cardText] + '.svg)';
     
     card.className = 'card';
@@ -123,24 +113,24 @@ function createCard(cardData): HTMLElement {
     return card
 }
 
-function shuffle(array: cardDataObject[]): cardDataObject[]  {
-    let m: number = array.length;
+function shuffle(array)  {
+    let m = array.length;
     while (m) {
-        let i: number = Math.floor(Math.random() * m--);
-        let t: cardDataObject = array[m];
+        let i = Math.floor(Math.random() * m--);
+        let t = array[m];
         array[m] = array[i];
         array[i] = t;
     }
     return array;
 }
 
-function getAllMoveableCards(): NodeListOf<Element> {
-    const allMoveableCardsSelectorQuery: string = `
+function getAllMoveableCards() {
+    const allMoveableCardsSelectorQuery = `
         .leftFour .cardStack .card,
         .rightFour .cardStack .card:last-child,
         .cardRow .card:last-child
     `;
-    const allMoveableCards: NodeListOf<Element> = document.querySelectorAll(allMoveableCardsSelectorQuery);
+    const allMoveableCards = document.querySelectorAll(allMoveableCardsSelectorQuery);
 
     // working on moving stacks in bottom row
     // const topFour = document.querySelectorAll('.leftFour .cardStack');
@@ -155,8 +145,8 @@ function getAllMoveableCards(): NodeListOf<Element> {
     return allMoveableCards
 }
 
-function checkWin(): boolean {
-    const cardCount: number = document.querySelectorAll('.rightFour .cardStack .card').length;
+function checkWin()  {
+    const cardCount = document.querySelectorAll('.rightFour .cardStack .card').length;
     if(cardCount === 52) {
         alert('win')
         return true;
@@ -165,24 +155,24 @@ function checkWin(): boolean {
     }
 }
 
-function keyPress(event): void {
+function keyPress(event) {
     if (event.keyCode == 90 && event.ctrlKey) {
         moveTracker.undoMove();
     }
 }
 
-function addAllClickEvents(): void {
-    let moveCards: NodeListOf<Element> = getAllMoveableCards();
-    moveCards.forEach(function(card: Element) {
+function addAllClickEvents() {
+    let moveCards = getAllMoveableCards();
+    moveCards.forEach(function(card) {
         card.addEventListener('click', handleClick)
     });
 }
 
-function handleClick(event: Event): void {
-    const clickedCard: HTMLElement = event.target;
-    let hasMoved: boolean = false;
-    const allTopRightCards: NodeListOf<Element> = document.querySelectorAll('.rightFour .cardStack');
-    const allTopRightCardsArray: Element[] = [...allTopRightCards];
+function handleClick(event) {
+    const clickedCard = event.target;
+    let hasMoved = false;
+    const allTopRightCards = document.querySelectorAll('.rightFour .cardStack');
+    const allTopRightCardsArray = [...allTopRightCards];
     hasMoved = allTopRightCardsArray.some(function(targetStack) {
         const checkAcePlacement = !targetStack.hasChildNodes() && clickedCard.dataset.number === '1';
         if(checkAcePlacement) {
@@ -192,7 +182,7 @@ function handleClick(event: Event): void {
         } else if (targetStack.hasChildNodes()) {
             const cardData = clickedCard.dataset;
             const stackData = targetStack.lastChild.dataset;
-            const checkNumberCardPlacement: boolean = (
+            const checkNumberCardPlacement = (
                 cardData.suit === stackData.suit
                 && Number(cardData.number) === Number(stackData.number) + 1
             );
@@ -205,13 +195,13 @@ function handleClick(event: Event): void {
     });
     if(hasMoved) return;
 
-    const allLowerMoveableCards:NodeListOf<Element> = document.querySelectorAll('.cardRow');
-    const allLowerMoveableCardsArray: Element[] = [...allLowerMoveableCards];
+    const allLowerMoveableCards = document.querySelectorAll('.cardRow');
+    const allLowerMoveableCardsArray = [...allLowerMoveableCards];
     hasMoved = allLowerMoveableCardsArray.some(function(targetStack){
         if(targetStack.hasChildNodes()) {
             const cardData = clickedCard.dataset;
             const stackData = targetStack.lastChild.dataset;
-            const checkDropLower: boolean = (
+            const checkDropLower = (
                 cardData.colour !== stackData.colour
                 && Number(cardData.number) + 1 === Number(stackData.number)
             );
@@ -228,8 +218,8 @@ function handleClick(event: Event): void {
     });
     if(hasMoved) return;
 
-    const allTopLeftCards: NodeListOf<Element> = document.querySelectorAll('.leftFour .cardStack');
-    const allTopLeftCardsArray: Element[] = [...allTopLeftCards];
+    const allTopLeftCards = document.querySelectorAll('.leftFour .cardStack');
+    const allTopLeftCardsArray = [...allTopLeftCards];
     allTopLeftCardsArray.some(function(targetStack) {
         if(!targetStack.hasChildNodes()) {
             moveTracker.addMove(clickedCard, clickedCard.parentElement);
@@ -239,7 +229,7 @@ function handleClick(event: Event): void {
     });
 }
 
-function handleDragStart(event: Event): void {
+function handleDragStart(event) {
     moveTracker.grabbedCard = event.target;
     makeDroppable(moveTracker.grabbedCard)
 }
