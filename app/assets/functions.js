@@ -104,7 +104,7 @@ function opening() {
 function createCard(cardData) {
     let card = document.createElement('div');
     let cardText = cardData['suit'] + '-' + cardData['number'];
-    card.style.backgroundImage = 'url(./card_images/' + cardMapping[cardText] + '.svg)';
+    card.style.backgroundImage = 'url(./assets/card_images/' + cardMapping[cardText] + '.svg)';
     
     card.className = 'card';
     card.dataset.suit = cardData['suit'];
